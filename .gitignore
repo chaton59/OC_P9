@@ -1,0 +1,31 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset (images volumineuses)
+mri_dataset_brain_cancer_oc/
+*.zip
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Modèles entraînés (commenter si tu veux les versionner)
+*.pt
+*.pth
+*.h5
+*.keras
+*.pkl
