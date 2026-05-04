@@ -29,3 +29,6 @@ Thumbs.db
 *.h5
 *.keras
 *.pkl
+
+# Dossier outputs racine (résultats intermédiaires de pipeline)
+/outputs/

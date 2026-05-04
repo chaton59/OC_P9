@@ -1,0 +1,50 @@
+Dans le cadre d’un nouveau projet R&D, CurelyticsIA souhaite explorer la possibilité d’automatiser la détection de tumeurs du cerveau. Un ensemble conséquent de radios a été collecté : la majorité de ces images ne dispose d’aucun étiquetage, tandis qu’un sous-ensemble limité a été annoté par des radiologues experts.
+
+Vous êtes chargé de concevoir une première exploration analytique du jeu de données. Plus précisément, votre mission est de :
+ - Explorer les images et extraire des caractéristiques visuelles via un modèle pré-entraîné ;
+ - Appliquer des méthodes de clustering pour identifier des structures ou regroupements dans les données ;
+ - Mettre en œuvre une méthode d’apprentissage semi-supervisé à partir des quelques étiquettes disponibles ;
+ - Synthétiser vos résultats, formuler des recommandations, et les présenter à votre équipe projet.
+
+
+Vous recevez un mail de votre responsable Data Science, Clara Martin, qui vous partage les détails du projet :
+
+
+"Objet : Mission d'exploration et de modélisation - Données radios
+
+Bonjour,
+
+Comme discuté lors de notre dernière réunion, tu es assigné à la première phase du projet BrainScanAI. Tu trouveras en pièce jointe un fichier zip contenant :
+Le jeu de données de radiographies (en format PNG + métadonnées anonymisées),
+Une documentation technique sur le format des images ;
+Une liste restreinte de labels annotés par nos partenaires hospitaliers (normal/cancéreux). 
+Pour info, notre budget actuel pour la labellisation par IA est de 300 euros pour ce dataset. 
+
+Tes objectifs :
+1. Extraire des caractéristiques visuelles pertinentes à l’aide d’un modèle pré-entraîné (type ResNet ou équivalent).
+2. Réaliser un clustering exploratoire pour identifier des regroupements naturels.
+3. Mettre en œuvre une méthode semi-supervisée en exploitant les labels partiels pour prédire les étiquettes manquantes.
+4. Proposer des livrables au format Notebook contenant :
+ - l’extraction des features
+ - le preprocessing adapté au(x) modèle(s) utilisés
+ - l’analyse non-supervisée (.ipynb)
+ - l’entraînement de modèles de clustering
+ - l’approche semi-supervisée (.ipynb)
+
+
+Ces livrables doivent être accompagnés d’un support de présentation proposant des recommandations techniques pour un passage à l’échelle (budget de 5 000 euros pour 4 millions d’images à labelliser). Est-ce que ce passage te paraît faisable et si oui, sous quelles conditions ?
+
+Rédiger une synthèse de ton approche et de tes résultats dans un support de présentation.
+
+Les contraintes :
+ - Travailler en Python.
+ - Tester plusieurs algorithmes.
+ - Avoir des métriques pertinentes en fonction de l’erreur la plus importante (F1, Acc, Précision, ou autre ?).
+ - Clairement définir ce que tu considères comme un objectif atteint (“definition of done”).
+
+N’hésite pas à me faire un point d’étape avant la fin de semaine. Bon courage pour cette mission !
+
+Clara
+Responsable Data Science
+CurelyticsIA
+"

@@ -1,0 +1,177 @@
+📋 BRIEFING ÉTAPE 1 :
+Objectif de l’Étape 1 :
+Importer, explorer et comprendre le jeu de données de radiographies IRM cérébrales avant toute modélisation.
+
+Stratégie globale adoptée :
+Nous avons choisi une approche en deux phases, classique en R&D :
+
+Phase d’exploration & prototypage : Travailler sur un échantillon stratifié de 300 images (reproductible grâce au fichier sample_paths.json avec seed=42).
+Phase finale : Appliquer le pipeline validé sur l’intégralité du dataset (1506 images) lors de l’Étape 4.
+
+Pourquoi cette stratégie ?
+Cela permet des itérations rapides, garantit la reproductibilité des expériences, et suit les bonnes pratiques (valider d’abord sur un sous-ensemble représentatif avant de scaler).
+
+Résumé du dataset (après exploration) :
+
+Total d’images : 1506 (format JPG)
+Images avec labels : 100 (50 cancer + 50 normal) → dossier avec_labels/
+Images sans labels : 1406 → dossier sans_label/
+Résolution : 224 × 224 (parfaitement homogène)
+Structure : Dossiers par classe (cancer/ et normal/) dans avec_labels/
+Qualité : Techniquement très propre (aucune image corrompue détectée). Cependant, certaines images présentent une qualité variable, des déformations ou des prises de vue différentes (face/profil). Cette observation a été documentée.
+
+
+Sous-étapes réalisées :
+1.1 – Préparation de l’environnement (Python, bibliothèques, GPU CUDA, constantes du projet)
+1.2 – Exploration de la structure du dataset (découverte de la séparation avec_labels / sans_label)
+1.3 – Visualisation d’images d’exemple + analyse technique (taille, mode, qualité). Une note a été ajoutée concernant les images de faible qualité / déformées.
+1.4 – Analyse de la distribution des labels (parfaitement équilibrée 50/50) + sauvegarde du graphique et du CSV
+1.5 – Contrôle qualité approfondi (sur 500 images) + création d’un échantillon réduit stratifié de 300 images sauvegardé dans sample_paths.json
+
+Fichiers produits dans outputs/etape1/ :
+
+sample_paths.json → 300 images stratifiées (avec path + label)
+labels_distribution.csv
+labels_distribution.png
+exemples_images.png
+histogrammes_intensites.png
+
+
+Points clés à retenir pour les étapes suivantes :
+
+Utiliser prioritairement le fichier sample_paths.json (300 images) pour les étapes 2 et 3 → rapidité et reproductibilité.
+Dans l’Étape 4 (semi-supervisé), proposer deux versions : une sur l’échantillon de 300 images (rapide) et une sur les 1506 images complètes (version finale).
+Prendre en compte les images de qualité variable (data augmentation robuste recommandée).
+L’objectif final est de démontrer l’intérêt de l’approche semi-supervisée par rapport à un entraînement supervisé classique sur les 100 images labellisées seulement.
+
+
+Definition of Done – Étape 1 (validée) :
+
+Dataset exploré et compris
+Structure et distribution analysées
+Qualité technique validée
+Échantillon réduit reproductible créé
+Synthèse complète documentée
+
+
+Fin du briefing Étape 1
+--------------------------------------
+
+📋 BRIEFING ÉTAPE 2 :
+
+Objectif de l’Étape 2 :
+Préparer les images (redimensionnement, normalisation) et extraire des embeddings visuels de 2048 dimensions à l’aide d’un modèle pré-entraîné (ResNet50) pour les 300 images de l’échantillon.
+Stratégie globale adoptée :
+Nous avons choisi une approche de transfer learning classique et efficace :
+
+Utilisation du nouvel échantillon stratifié de 300 images (sample_paths_v2.json) : 50 cancer + 50 normal + 200 sans_label (seed=42).
+Modèle ResNet50 pré-entraîné sur ImageNet (couches convolutionnelles gelées).
+Preprocessing strictement ImageNet (Resize + Normalize).
+Extraction en batch sur GPU avec torch.no_grad() pour rapidité et faible consommation mémoire.
+Sauvegarde optimisée des features et métadonnées.
+
+Pourquoi cette stratégie ?
+
+ResNet50 fournit des features riches et génériques très adaptées aux images médicales.
+L’extraction est extrêmement rapide (0,56 s pour 300 images sur RTX 4070).
+Les fichiers produits (features.npy + metadata.csv) sont directement réutilisables dans les Étapes 3 et 4.
+Cela permet de valider la qualité des embeddings avant le clustering et le semi-supervisé.
+
+Résumé technique :
+
+Images : 300 × 224×224×3 (RGB)
+Features extraites : 300 × 2048 (float32)
+Visualisation PCA 2D : séparation partielle visible entre classes (variance expliquée cumulée = 17,9 % en 2D)
+
+Sous-étapes réalisées :
+2.1 – Création du notebook + initialisation + chargement du nouvel échantillon (sample_paths_v2.json)
+2.2 – Preprocessing ImageNet + Custom Dataset PyTorch (BrainMRIDataset)
+2.3 – Chargement ResNet50 + création du feature extractor (suppression de la tête fc)
+2.4 – Extraction des features en batch optimisée (torch.no_grad())
+2.5 – Sauvegarde des features et metadata
+2.6 – Visualisation exploratoire PCA 2D colorée par label
+Fichiers produits dans notebook/outputs/etape2/ :
+
+features.npy → embeddings (300 × 2048)
+metadata.csv → chemins + labels
+pca_2d_features.png → visualisation exploratoire
+
+Points clés à retenir pour les étapes suivantes :
+
+Charger directement features.npy + metadata.csv pour l’Étape 3 (clustering) et l’Étape 4 (semi-supervisé).
+La PCA montre une séparation partielle → bon signe pour le clustering non supervisé.
+Garder les 100 images labellisées séparées des 200 sans_label pour l’évaluation (ARI, etc.).
+Tout est reproductible grâce au seed=42 et aux fichiers sauvegardés.
+
+Definition of Done – Étape 2 (validée) :
+
+ Notebook 02_pretraitement_extraction_features.ipynb terminé et commenté
+ Features extraites et sauvegardées (300 × 2048)
+ Preprocessing ImageNet validé
+ Visualisation exploratoire réalisée
+ Fichiers prêts pour Étape 3
+ 
+ FIN DU BRIEFING ETAPE 2
+ ---------------------------------
+ 
+ BRIEFING ÉTAPE 3 :
+Objectif de l’Étape 3 :
+Réaliser une analyse non supervisée complète sur les embeddings ResNet50 (300 images) : réduction de dimensionnalité, clustering avec plusieurs algorithmes, évaluation quantitative (ARI + Silhouette), génération de labels faibles, tout en maintenant une séparation stricte entre données fortement labellisées (100 images) et faiblement labellisées (200 images).
+Stratégie globale adoptée :
+Approche classique et pédagogique en trois phases :
+
+Réduction de dimensionnalité (PCA + t-SNE) pour visualisation et débruitage.
+Clustering avec 3 méthodes (K-Means, DBSCAN, CAH) testées et comparées.
+Génération de pseudo-labels uniquement à partir du meilleur algorithme (K-Means) sur les 200 images sans label.
+
+Pourquoi cette stratégie ?
+
+Respecte à la lettre les instructions de etapes.txt : tester plusieurs algorithmes, visualiser les clusters en 2D, évaluer avec ARI sur les données fortement labellisées, et ne jamais mélanger fort/faible.
+Permet de démontrer que les embeddings ResNet50 contiennent une structure discriminative réelle même sans supervision.
+Prépare directement l’Étape 4 (semi-supervisé) avec des fichiers propres et reproductibles (seed=42 partout).
+Choix de K-Means validé par Elbow + Silhouette + ARI le plus élevé.
+
+Résumé technique :
+
+Embeddings : 300 × 2048 (normalisés)
+Meilleure méthode retenue : K-Means (k=2)
+ARI (sur 100 images labellisées) : 0.4572 (correspondance modérée → très bon résultat pour du non supervisé)
+Silhouette : confirmée optimale à k=2
+Labels faibles générés : 200 pseudo-labels (K-Means uniquement)
+
+Sous-étapes réalisées :
+3.1 – Chargement & préparation (features_scaled.npy + séparation labeled/unlabeled)
+3.2 – Réduction de dimensionnalité (PCA complète + 2D, t-SNE 2D)
+3.3 – Clustering (K-Means, DBSCAN, CAH avec dendrogramme)
+3.4 – Visualisations 2D des clusters (t-SNE/PCA)
+3.5 – Sélection k optimal (Elbow + Silhouette multi-k)
+3.6 – Évaluation (ARI + Silhouette) + comparaison des 3 méthodes
+3.7 – Génération des labels faibles + sauvegarde finale
+Fichiers produits dans notebook/outputs/etape3/ :
+
+features_scaled.npy
+metadata_final.csv (dataset complet enrichi)
+labels_faibles.csv (200 images + pseudo_label K-Means uniquement)
+df_2d.csv (PCA + t-SNE + clusters)
+Graphiques : pca_2d.png, tsne_2d.png, kmeans_tsne.png, dbscan_tsne.png, dendrogramme_cah.png, elbow_silhouette.png
+metadata_with_clusters.csv
+
+Points clés à retenir pour les étapes suivantes :
+
+Utiliser prioritairement metadata_final.csv et labels_faibles.csv pour l’Étape 4.
+K-Means est le modèle retenu (meilleur ARI + Silhouette + stabilité).
+Séparation fort/faible strictement respectée → prêt pour le semi-supervisé.
+Les visualisations et métriques sont prêtes pour la présentation finale.
+
+Definition of Done – Étape 3 (validée) :
+
+ Réduction de dimensionnalité (PCA + t-SNE) réalisée et visualisée
+ Plusieurs méthodes de clustering testées (K-Means + DBSCAN + CAH)
+ k optimal sélectionné (Elbow + Silhouette)
+ ARI et Silhouette calculés sur les 100 images fortement labellisées
+ Labels faibles générés et sauvegardés séparément
+ Séparation fort/faible respectée
+ Fichiers prêts pour l’Étape 4
+ Synthèse complète documentée
+
+Fin du briefing Étape 3
