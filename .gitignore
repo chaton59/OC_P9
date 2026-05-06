@@ -32,3 +32,13 @@ Thumbs.db
 
 # Dossier outputs racine (résultats intermédiaires de pipeline)
 /outputs/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Données (images volumineuses)
+data/
+
+# Outputs notebooks
+notebook/outputs/

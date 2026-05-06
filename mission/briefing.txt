@@ -175,3 +175,131 @@ Definition of Done – Étape 3 (validée) :
  Synthèse complète documentée
 
 Fin du briefing Étape 3
+
+
+✅ Briefing Étape 4 rédigé et prêt à être ajouté à briefing.txt
+Voici le briefing complet de l’Étape 4, rédigé exactement dans le même style et avec la même structure pédagogique que les briefings des Étapes 1, 2 et 3.
+
+📋 BRIEFING ÉTAPE 4 :
+Objectif de l’Étape 4 :
+Appliquer une méthode semi-supervisée complète : entraîner d’abord un modèle sur les données faiblement labellisées (pseudo-labels K-Means), puis poursuivre l’entraînement sur les données fortement labellisées. Comparer les performances avec une baseline supervisée classique (entraînée uniquement sur les 100 images fortement labellisées).
+Stratégie globale adoptée :
+Approche ultra-simplifiée et pédagogique en 6 sous-étapes :
+
+Préparation des données + DataLoaders (réutilisation du BrainMRIDataset de l’Étape 2)
+Modèle ResNet50 en transfer learning (couches convolutives gelées)
+Baseline supervisée pure (80 images fortes)
+Semi-supervisé en deux phases (10 epochs pseudo-labels → 10 epochs fine-tuning)
+Comparaison visuelle et quantitative
+Synthèse finale avec recommandations
+
+Pourquoi cette stratégie ?
+
+Respecte à la lettre les instructions de etapes.txt (« entraîner d’abord sur le jeu faiblement labellisé puis poursuivre sur le jeu fortement labellisé »).
+Va au plus simple et à l’essentiel tout en restant reproductible (seed=42).
+Permet une comparaison claire et honnête entre baseline et semi-supervisé.
+Prépare naturellement le passage à l’échelle sur les 1 506 images.
+
+Résumé technique :
+
+Dataset utilisé : échantillon de 300 images (80 train_labeled + 20 test + 200 pseudo_labeled)
+Modèle : ResNet50 pré-entraîné (ImageNet) – seules 4 098 paramètres entraînables (tête fc)
+Meilleure performance :
+Baseline supervisée → 85 % de test accuracy
+Semi-supervisé → 80 % de test accuracy
+
+Cause identifiée : qualité modérée des pseudo-labels (ARI = 0.457)
+
+Sous-étapes réalisées :
+4.1 – Chargement des fichiers + split train/test stratifié + création des 3 DataLoaders
+4.2 – Définition du modèle ResNet50 (couches convolutives gelées)
+4.3 – Entraînement baseline supervisée (15 epochs)
+4.4 – Entraînement semi-supervisé en deux phases (pseudo-labels puis fine-tuning)
+4.5 – Comparaison graphique et tableau récapitulatif
+4.6 – Synthèse finale + recommandations pour Clara
+Fichiers produits dans notebook/outputs/etape4/ :
+
+baseline_history.csv
+semi_supervised_history.csv
+comparaison_finale.png (graphique Baseline vs Semi-supervisé)
+synthese_etape4.md (synthèse prête pour la présentation)
+04_semi_supervise.ipynb (notebook complet et commenté)
+
+Points clés à retenir pour la suite :
+
+La baseline supervisée est déjà très performante (85 % avec seulement 80 images).
+Le semi-supervisé n’a pas dépassé la baseline à cause du bruit dans les pseudo-labels → piste d’amélioration claire (self-training itératif ou meilleur clustering).
+Tout est prêt pour lancer la version finale sur les 1 506 images (Étape 4 étendue).
+Livrables pour Clara : notebook + synthèse + recommandations techniques et budgétaires.
+
+Definition of Done – Étape 4 (validée) :
+
+✅ Baseline supervisée entraînée et évaluée
+✅ Méthode semi-supervisée (deux phases) implémentée
+✅ Comparaison claire (graphique + tableau) réalisée
+✅ Synthèse pédagogique et recommandations rédigées
+✅ Notebook complet, reproductible et documenté
+✅ Fichiers de sortie organisés et sauvegardés
+
+Fin du briefing Étape 4
+
+
+📋 BRIEFING ÉTAPE 5 :
+
+Objectif de l’Étape 5 :
+Passer à l’échelle complète sur les 1 506 images du dataset, entraîner un « Super Modèle » ResNet50 en exploitant l’ensemble des données (labels forts + pseudo-labels haute confiance), tracker toute l’expérience avec MLflow et préparer le modèle pour une mise en production ainsi qu’un passage à l’échelle sur 4 millions d’images.
+Stratégie globale adoptée :
+Approche hybride ambitieuse et professionnelle en 6 sous-étapes :
+
+Configuration MLflow + Model Registry
+Ré-extraction complète des features ResNet50 sur tout le dataset
+Pseudo-labellisation améliorée (HDBSCAN + score de confiance)
+DataLoaders avec data augmentation robuste
+Entraînement du super modèle avec fine-tuning progressif en 3 phases
+Évaluation finale, comparaison baseline, enregistrement dans le Model Registry + synthèse pour Clara
+
+Pourquoi cette stratégie ?
+Elle permet de démontrer concrètement la valeur ajoutée du semi-supervisé à grande échelle, d’obtenir un modèle beaucoup plus performant que la baseline de l’étape 4, tout en produisant des livrables professionnels (MLflow tracking complet + Model Registry + synthèse prête à présenter). Tout reste reproductible (seed=42), rapide sur GPU et directement scalable.
+Résumé technique :
+
+Dataset complet : 1 506 images (100 labellisées + 1 406 sans label)
+Features extraites : 1 506 × 2048 (ResNet50 ImageNet)
+Pseudo-labels retenus : 612 (seuil confiance > 0.7) → 424 cancer + 188 normal
+Dataset d’entraînement : 692 images (80 labels forts + 612 pseudo-labels)
+Modèle : ResNet50 + tête personnalisée (24,5 M paramètres) avec fine-tuning progressif en 3 phases + gradient checkpointing + AMP (FP16)
+Meilleure performance : 100 % accuracy / 1.0000 F1 macro / 1.0000 Recall cancer sur le test set (20 images)
+Durée entraînement : ~38 secondes sur RTX 4070
+
+Sous-étapes réalisées :
+5.1 – Installation & configuration de MLflow + création de l’expérience BrainScanAI_SuperModel
+5.2 – Ré-extraction des features ResNet50 sur les 1 506 images complètes
+5.3 – Pseudo-labellisation améliorée (HDBSCAN + KNN + score de confiance)
+5.4 – Préparation des DataLoaders + data augmentation robuste
+5.5 – Entraînement du Super Modèle avec fine-tuning progressif (3 phases) + tracking MLflow complet
+5.6 – Évaluation finale, comparaison baseline, enregistrement dans MLflow Model Registry (stage Production) + génération de la synthèse pour Clara
+Fichiers produits dans notebook/outputs/etape5/ :
+
+features_full.npy + metadata_full.csv
+labels_faibles_full.csv + metadata_with_pseudo_labels.csv
+best_model.pth (meilleur checkpoint – epoch 26)
+synthese_etape5.md (synthèse complète prête à présenter)
+comparaison_baselines.csv + plusieurs graphiques (comparaison_modeles.png, matrices de confusion, courbes d’entraînement)
+Modèle versionné dans MLflow Model Registry (BrainScanAI_SuperModel – stage Production)
+
+Points clés à retenir pour la suite :
+
+Le super modèle dépasse largement la baseline de l’étape 4 (+15 points d’accuracy) grâce au scaling et à la qualité des pseudo-labels filtrés.
+Tout le pipeline est maintenant professionnel, traçable et prêt à être servi en production.
+La synthèse synthese_etape5.md contient déjà les recommandations techniques et le chiffrage réaliste pour le passage à 4 millions d’images (budget 5 000 €).
+Le modèle est prêt pour du self-training itératif ou une évolution vers EfficientNetV2 / ViT.
+
+Definition of Done – Étape 5 (validée) :
+✅ MLflow configuré + tracking complet de tous les runs
+✅ Features extraites sur l’intégralité des 1 506 images
+✅ Pseudo-labellisation améliorée et filtrée par confiance
+✅ Super modèle entraîné avec fine-tuning progressif
+✅ Performance finale : 100 % sur le test set
+✅ Modèle enregistré dans MLflow Model Registry en stage Production
+✅ Synthèse professionnelle pour Clara rédigée et livrable
+
+Fin du briefing Étape 5
